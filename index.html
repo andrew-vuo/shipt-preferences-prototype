@@ -37,19 +37,25 @@
   }
   .screen{position:absolute;inset:0;overflow:hidden;}
 
-  /* ---- Home screen ---- */
+  /* ---- Home screen: fixed header + scrollable content (Frame 2147260108) + fixed tab bar ---- */
   #home{cursor:default;background:#fff;}
-  #home img{width:100%;display:block;}
-  #home .home-scroll{position:absolute;inset:0;overflow-y:auto;}
-  /* transparent hotspot over the real "Set preferences" button in home.png */
+  #home img{display:block;}
+  #home .home-header{position:absolute;top:0;left:0;width:375px;height:315px;z-index:3;}
+  #home .home-tabbar{position:absolute;top:732px;left:0;width:375px;height:80px;z-index:3;}
+  #home .home-scroll{
+    position:absolute;top:315px;left:0;width:375px;height:417px;
+    overflow-y:auto;overflow-x:hidden;z-index:1;-webkit-overflow-scrolling:touch;
+  }
+  #home .home-scroll img{width:375px;}
+  /* transparent hotspot over the real "Set preferences" button inside scroll content */
   .launch-hint{
-    position:absolute;left:62px;top:698px;width:134px;height:36px;
-    background:transparent;border:none;border-radius:400px;cursor:pointer;
+    position:absolute;left:70px;top:638px;width:118px;height:36px;
+    background:transparent;border:none;border-radius:400px;cursor:pointer;z-index:2;
   }
 
   /* ---- Dialog (full-screen white) ---- */
   .dialog{
-    position:absolute;inset:0;background:#fff;
+    position:absolute;inset:0;background:#fff;z-index:10;
     display:none;flex-direction:column;align-items:flex-end;
     padding-bottom:32px;
     animation:slideIn .28s cubic-bezier(.2,.7,.3,1);
@@ -161,10 +167,12 @@
 
     <!-- HOME -->
     <section class="screen" id="home">
-      <div class="home-scroll">
-        <img src="assets/home.png" alt="Shipt home screen" />
+      <img class="home-header" src="assets/home-header.png" alt="" />
+      <div class="home-scroll" id="homeScroll">
+        <img id="homeContentImg" src="assets/home-content.png" alt="Home content" />
+        <button class="launch-hint" id="launchHint" aria-label="Set preferences" onclick="openFlow()"></button>
       </div>
-      <button class="launch-hint" aria-label="Set preferences" onclick="openFlow()"></button>
+      <img class="home-tabbar" src="assets/home-tabbar.png" alt="" />
     </section>
 
     <!-- INTRO -->
@@ -277,9 +285,20 @@
 
   function openFlow(){ show('intro'); }
 
+  // Swap home content between initial (promo banner + hotspot) and completed (no banner) states
+  function setHomeState(done){
+    const img = document.getElementById('homeContentImg');
+    const hint = document.getElementById('launchHint');
+    const scroll = document.getElementById('homeScroll');
+    img.src = done ? 'assets/done-content.png' : 'assets/home-content.png';
+    hint.style.display = done ? 'none' : 'block';
+    scroll.scrollTop = 0;
+  }
+
   function goHome(){
     show(null);
-    // reset scroll of step content for next open
+    hideToast();
+    setHomeState(false);
   }
 
   function goStep(n){
@@ -324,7 +343,8 @@
   }
 
   function finishFlow(){
-    goHome();
+    show(null);
+    setHomeState(true);       // completed home: promo banner removed (exact 735:184716 design)
     const t = document.getElementById('toast');
     t.classList.add('show');
     clearTimeout(window.__toastTimer);
