@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Share your preferences — Shipt onboarding prototype</title>
+<style>
+  /* ---- Design tokens from Figma (Shipt) ---- */
+  :root{
+    --primary:#212121;
+    --content-primary:#302638;
+    --title-primary:#212121;
+    --secondary:rgba(33,33,33,0.8);
+    --chip-border:#cac9cc;
+    --chip-text:#25123a;
+    --progress-empty:#cac9cc;
+    --progress-fill:linear-gradient(-90deg, rgb(29,164,87) 0%, rgb(36,205,108) 47.4%);
+    --font: "Euclid Circular A", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:var(--font);
+    background:#e9eaee;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:100vh;gap:14px;padding:24px 0;
+  }
+
+  /* ---- Phone frame ---- */
+  .device{
+    position:relative;
+    width:375px;height:812px;
+    background:#fff;border-radius:44px;
+    box-shadow:0 0 0 12px #111, 0 24px 60px rgba(0,0,0,.35);
+    overflow:hidden;
+  }
+  .screen{position:absolute;inset:0;overflow:hidden;}
+
+  /* ---- Home screen ---- */
+  #home{cursor:default;background:#fff;}
+  #home img{width:100%;display:block;}
+  #home .home-scroll{position:absolute;inset:0;overflow-y:auto;}
+  /* transparent hotspot over the real "Set preferences" button in home.png */
+  .launch-hint{
+    position:absolute;left:57px;top:697px;width:142px;height:42px;
+    background:transparent;border:none;border-radius:400px;cursor:pointer;
+  }
+
+  /* ---- Dialog (full-screen white) ---- */
+  .dialog{
+    position:absolute;inset:0;background:#fff;
+    display:none;flex-direction:column;align-items:flex-end;
+    padding-bottom:32px;
+    animation:slideIn .28s cubic-bezier(.2,.7,.3,1);
+  }
+  .dialog.active{display:flex;}
+  @keyframes slideIn{from{transform:translateY(14px);opacity:0;}to{transform:none;opacity:1;}}
+
+  /* header */
+  .header{
+    display:flex;align-items:flex-start;justify-content:space-between;
+    width:100%;padding:48px 0 16px 8px;flex:0 0 auto;
+  }
+  .title-container{flex:1 1 0;min-width:0;padding:4px 0 4px 8px;}
+  .title-container h1{
+    margin:0;font-weight:600;font-size:24px;line-height:30px;
+    color:var(--title-primary);letter-spacing:0;
+  }
+  .icon-btn{
+    width:40px;height:40px;border:2px solid transparent;background:transparent;
+    border-radius:400px;display:flex;align-items:center;justify-content:center;
+    padding:10px;cursor:pointer;color:#212121;flex:0 0 auto;
+  }
+  .icon-btn svg{width:20px;height:20px;display:block;}
+  .icon-btn:active{background:rgba(33,33,33,.06);}
+  .trailing{display:flex;align-items:center;justify-content:flex-end;min-height:38px;padding-right:4px;}
+
+  /* content */
+  .content{
+    flex:1 1 0;min-height:0;width:100%;
+    overflow-y:auto;overflow-x:clip;
+    padding:0 16px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;
+  }
+  .pref-form{display:flex;flex-direction:column;gap:24px;width:100%;}
+
+  /* intro hero */
+  .intro{display:flex;flex-direction:column;gap:24px;width:100%;}
+  .intro .hero{
+    width:100%;height:379px;border-radius:16px;background:#d9d9d9;
+    object-fit:cover;display:block;
+  }
+  .intro p{
+    margin:0;font-weight:400;font-size:16px;line-height:20px;color:var(--content-primary);
+  }
+
+  /* top bar + progress */
+  .topbar{display:flex;align-items:center;justify-content:flex-end;padding:0 8px;width:100%;height:40px;}
+  .topbar span{font-weight:500;font-size:12px;line-height:18px;color:var(--secondary);}
+  .progress{display:flex;gap:4px;align-items:center;width:100%;}
+  .progress .seg{flex:1 1 0;min-width:0;height:6px;border-radius:69px;background:var(--progress-empty);}
+  .progress .seg.fill{background:var(--progress-fill);}
+
+  /* body text */
+  .form-heading{display:flex;flex-direction:column;gap:8px;width:100%;}
+  .form-heading .q{margin:0;font-weight:600;font-size:24px;line-height:30px;color:var(--content-primary);}
+  .form-heading .sub{margin:0;font-weight:400;font-size:16px;line-height:20px;color:var(--content-primary);}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;width:100%;align-content:flex-start;}
+  .chip{
+    height:32px;border:2px solid var(--chip-border);background:transparent;
+    border-radius:400px;padding:8px 16px;display:inline-flex;align-items:center;justify-content:center;
+    font-family:var(--font);font-weight:600;font-size:14px;line-height:16px;color:var(--chip-text);
+    white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,color .12s;
+  }
+  .chip:active{transform:scale(.97);}
+  .chip.selected{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  /* footer */
+  .footer{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    width:100%;padding:24px 16px 0;overflow:clip;flex:0 0 auto;
+  }
+  .btn{
+    width:100%;border-radius:400px;border:2px solid transparent;
+    padding:16px 32px;font-family:var(--font);font-weight:600;font-size:14px;
+    letter-spacing:.5px;text-align:center;cursor:pointer;line-height:1.429;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:active{background:#000;}
+  .btn-ghost{background:transparent;color:#212121;}
+  .btn-ghost:active{background:rgba(33,33,33,.06);}
+
+  /* toast */
+  .toast{
+    position:absolute;left:16px;right:16px;bottom:36px;
+    background:#212121;color:#fff;border-radius:12px;padding:14px 18px;
+    font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.3);
+    opacity:0;transform:translateY(20px);pointer-events:none;transition:.3s;z-index:20;
+  }
+  .toast.show{opacity:1;transform:none;}
+  .toast .check{
+    width:22px;height:22px;border-radius:50%;background:#24cd6c;color:#0b3d1f;
+    display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto;
+  }
+
+  .caption{color:#6a6a72;font-size:13px;font-family:var(--font);text-align:center;max-width:375px;}
+  .caption b{color:#333;}
+  .reset{background:none;border:none;color:#1da457;font-weight:600;cursor:pointer;font-size:13px;font-family:var(--font);}
+</style>
+</head>
+<body>
+
+  <div class="device" id="device">
+
+    <!-- HOME -->
+    <section class="screen" id="home">
+      <div class="home-scroll">
+        <img src="assets/home.png" alt="Shipt home screen" />
+      </div>
+      <button class="launch-hint" aria-label="Set preferences" onclick="openFlow()"></button>
+    </section>
+
+    <!-- INTRO -->
+    <section class="dialog" id="intro">
+      <div class="header">
+        <div class="title-container"><h1>Share your preferences</h1></div>
+        <div class="trailing">
+          <button class="icon-btn" aria-label="Close" onclick="goHome()">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="intro">
+          <img class="hero" src="assets/intro-hero.png" alt="People sharing a Shipt bag at a party" />
+          <p>Answer 3 quick questions to help us better tailor your shopping experience.</p>
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn btn-primary" onclick="goStep(1)">Start</button>
+        <button class="btn btn-ghost" onclick="goHome()">Not now</button>
+      </div>
+    </section>
+
+    <!-- STEP 1 / 2 / 3 share one template, generated by JS -->
+    <section class="dialog" id="step">
+      <div class="header">
+        <button class="icon-btn" aria-label="Back" onclick="stepBack()">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="trailing">
+          <button class="icon-btn" aria-label="Close" onclick="goHome()">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="pref-form">
+          <div style="display:flex;flex-direction:column;width:100%;">
+            <div class="topbar"><span id="stepLabel">Step 1 of 3</span></div>
+            <div class="progress" id="progress">
+              <div class="seg"></div><div class="seg"></div><div class="seg"></div>
+            </div>
+          </div>
+          <div class="form-heading">
+            <p class="q" id="stepQ"></p>
+            <p class="sub">Select all that apply.</p>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+      <div class="footer">
+        <button class="btn btn-primary" id="primaryBtn" onclick="stepNext()">Continue</button>
+        <button class="btn btn-ghost" onclick="stepNext()">Skip</button>
+      </div>
+    </section>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+      <span class="check">✓</span> Preferences saved
+    </div>
+  </div>
+
+  <div class="caption">
+    Exact Shipt <b>“Share your preferences”</b> onboarding flow from Figma. &nbsp;·&nbsp;
+    <button class="reset" onclick="goHome()">Reset to home</button>
+  </div>
+
+<script>
+  const STEPS = [
+    {
+      label:"Step 1 of 3",
+      q:"Who do you usually shop for?",
+      primary:"Continue",
+      chips:["Myself","Partner","Baby","Kids","Teens","Roommates","Pets"]
+    },
+    {
+      label:"Step 2 of 3",
+      q:"Which categories are you interested in?",
+      primary:"Continue",
+      chips:["Groceries","Alcohol","Pet Supplies","Gifts & Party","Beauty","Home Decor","Home Improvement","Household Essentials","Personal Care"]
+    },
+    {
+      label:"Step 3 of 3",
+      q:"What are your dietary preferences?",
+      primary:"Finish",
+      chips:["AHA Heart Healthy","Gluten Free","Low sodium","No Added Sugar","Non-GMO","Organic","Soy-free","Sugar-free","Wheat-free","Whole Grain","Atkins","Keto","Kosher","Mediterranean","Paleo","Pescatarian","Vegan","Vegetarian"]
+    }
+  ];
+
+  // selection state per step
+  const selected = [new Set(), new Set(), new Set()];
+  let current = 0; // 1..3 when in a step
+
+  function show(id){
+    document.querySelectorAll('.dialog').forEach(d=>d.classList.remove('active'));
+    if(id) document.getElementById(id).classList.add('active');
+  }
+
+  function openFlow(){ show('intro'); }
+
+  function goHome(){
+    show(null);
+    // reset scroll of step content for next open
+  }
+
+  function goStep(n){
+    current = n;
+    const s = STEPS[n-1];
+    document.getElementById('stepLabel').textContent = s.label;
+    document.getElementById('stepQ').textContent = s.q;
+    document.getElementById('primaryBtn').textContent = s.primary;
+
+    // progress
+    const prog = document.getElementById('progress');
+    [...prog.children].forEach((seg,i)=>{
+      seg.className = 'seg' + (i < n ? ' fill' : '');
+    });
+
+    // chips
+    const wrap = document.getElementById('chips');
+    wrap.innerHTML = '';
+    s.chips.forEach(label=>{
+      const b = document.createElement('button');
+      b.className = 'chip' + (selected[n-1].has(label) ? ' selected' : '');
+      b.textContent = label;
+      b.onclick = ()=>{
+        if(selected[n-1].has(label)){ selected[n-1].delete(label); b.classList.remove('selected'); }
+        else { selected[n-1].add(label); b.classList.add('selected'); }
+      };
+      wrap.appendChild(b);
+    });
+
+    show('step');
+    document.querySelector('#step .content').scrollTop = 0;
+  }
+
+  function stepBack(){
+    if(current <= 1){ show('intro'); }
+    else { goStep(current - 1); }
+  }
+
+  function stepNext(){
+    if(current < 3){ goStep(current + 1); }
+    else { finishFlow(); }
+  }
+
+  function finishFlow(){
+    goHome();
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
