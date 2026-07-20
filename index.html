@@ -43,7 +43,7 @@
   #home .home-scroll{position:absolute;inset:0;overflow-y:auto;}
   /* transparent hotspot over the real "Set preferences" button in home.png */
   .launch-hint{
-    position:absolute;left:57px;top:697px;width:142px;height:42px;
+    position:absolute;left:62px;top:698px;width:134px;height:36px;
     background:transparent;border:none;border-radius:400px;cursor:pointer;
   }
 
@@ -132,19 +132,23 @@
   .btn-ghost{background:transparent;color:#212121;}
   .btn-ghost:active{background:rgba(33,33,33,.06);}
 
-  /* toast */
+  /* toast (exact Figma component 735:185688) */
   .toast{
-    position:absolute;left:16px;right:16px;bottom:36px;
-    background:#212121;color:#fff;border-radius:12px;padding:14px 18px;
-    font-size:14px;font-weight:600;display:flex;align-items:center;gap:10px;
-    box-shadow:0 12px 30px rgba(0,0,0,.3);
-    opacity:0;transform:translateY(20px);pointer-events:none;transition:.3s;z-index:20;
+    position:absolute;left:16px;top:665px;width:343px;
+    background:#212121;border:1px solid rgba(33,33,33,0.1);
+    border-radius:8px;overflow:clip;
+    box-shadow:0 0 4px 0 rgba(0,0,0,.1), 0 6px 6px -4px rgba(0,0,0,.2);
+    opacity:0;transform:translateY(12px);pointer-events:none;transition:.3s;z-index:20;
   }
   .toast.show{opacity:1;transform:none;}
-  .toast .check{
-    width:22px;height:22px;border-radius:50%;background:#24cd6c;color:#0b3d1f;
-    display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto;
-  }
+  .toast .toast-content{display:flex;gap:12px;align-items:center;padding:8px 12px;width:100%;}
+  .toast .icon{width:20px;height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+  .toast .icon svg{width:16.67px;height:16.67px;display:block;}
+  .toast .txt{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:2px;align-items:flex-start;}
+  .toast .txt .t1{font-family:var(--font);font-weight:600;font-size:16px;line-height:20px;color:#fff;}
+  .toast .txt .t2{font-family:var(--font);font-weight:400;font-size:14px;line-height:18px;color:#fff;}
+  .toast .close{width:20px;height:20px;flex:0 0 auto;color:#fff;background:transparent;border:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .toast .close svg{width:14px;height:14px;display:block;}
 
   .caption{color:#6a6a72;font-size:13px;font-family:var(--font);text-align:center;max-width:375px;}
   .caption b{color:#333;}
@@ -218,9 +222,20 @@
       </div>
     </section>
 
-    <!-- TOAST -->
+    <!-- TOAST (exact Figma component) -->
     <div class="toast" id="toast">
-      <span class="check">✓</span> Preferences saved
+      <div class="toast-content">
+        <span class="icon">
+          <svg viewBox="0 0 16.6667 16.6667" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.33333 16.6667C12.9357 16.6667 16.6667 12.9357 16.6667 8.33333C16.6667 3.73096 12.9357 0 8.33333 0C3.73096 0 0 3.73096 0 8.33333C0 12.9357 3.73096 16.6667 8.33333 16.6667ZM12.8406 6.72976C13.1823 6.38805 13.1823 5.83403 12.8406 5.49232C12.4989 5.15062 11.9449 5.15062 11.6032 5.49232L7.22188 9.87361L5.61838 8.2701C5.27667 7.92839 4.72265 7.92839 4.38094 8.2701C4.03923 8.61181 4.03923 9.16583 4.38094 9.50754L6.60316 11.7298C6.94487 12.0715 7.49889 12.0715 7.8406 11.7298L12.8406 6.72976Z" fill="#2FAD32"/></svg>
+        </span>
+        <span class="txt">
+          <span class="t1">Preferences saved</span>
+          <span class="t2">Changes can be made in your Account page</span>
+        </span>
+        <button class="close" aria-label="Dismiss" onclick="hideToast()">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -312,7 +327,12 @@
     goHome();
     const t = document.getElementById('toast');
     t.classList.add('show');
-    setTimeout(()=>t.classList.remove('show'), 2600);
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(hideToast, 4000);
+  }
+
+  function hideToast(){
+    document.getElementById('toast').classList.remove('show');
   }
 </script>
 </body>
