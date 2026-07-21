@@ -5,19 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Share your preferences — Shipt onboarding prototype</title>
 <style>
-  /* ---- Design tokens from Figma (Shipt) ---- */
   :root{
-    --primary:#212121;
-    --content-primary:#302638;
-    --title-primary:#212121;
-    --secondary:rgba(33,33,33,0.8);
-    --chip-border:#cac9cc;
-    --chip-text:#25123a;
-    --progress-empty:#cac9cc;
-    --progress-fill:linear-gradient(-90deg, rgb(29,164,87) 0%, rgb(36,205,108) 47.4%);
     --font: "Euclid Circular A", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
-
   *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
   html,body{margin:0;height:100%;}
   body{
@@ -40,7 +30,7 @@
   }
   .screen{position:absolute;inset:0;overflow:hidden;}
 
-  /* ---- Home screen: fixed header + scrollable content (Frame 2147260108) + fixed tab bar ---- */
+  /* ---- Home screen ---- */
   #home{cursor:default;background:#fff;}
   #home img{display:block;}
   #home .home-header{position:absolute;top:0;left:0;width:375px;height:315px;z-index:3;}
@@ -50,98 +40,25 @@
     overflow-y:auto;overflow-x:hidden;z-index:1;-webkit-overflow-scrolling:touch;
   }
   #home .home-scroll img{width:375px;}
-  /* transparent hotspot over the real "Set preferences" button inside scroll content */
   .launch-hint{
     position:absolute;left:70px;top:353px;width:118px;height:36px;
     background:transparent;border:none;border-radius:400px;cursor:pointer;z-index:2;
   }
 
-  /* ---- Dialog (full-screen white) ---- */
-  .dialog{
-    position:absolute;inset:0;background:#fff;z-index:10;
-    display:none;flex-direction:column;align-items:flex-end;
-    padding-bottom:32px;
-    animation:slideIn .28s cubic-bezier(.2,.7,.3,1);
-  }
-  .dialog.active{display:flex;}
+  /* ---- Exact Figma image screens (Step 1/2/3) ---- */
+  .step-screen{position:absolute;inset:0;background:#fff;z-index:10;display:none;}
+  .step-screen.active{display:block;animation:slideIn .28s cubic-bezier(.2,.7,.3,1);}
   @keyframes slideIn{from{transform:translateY(14px);opacity:0;}to{transform:none;opacity:1;}}
+  .step-bg{position:absolute;inset:0;width:375px;height:812px;display:block;}
+  .hotspots{position:absolute;inset:0;}
+  .hotspot{position:absolute;background:transparent;border:none;padding:0;margin:0;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;}
+  .hotspot.chip{border-radius:400px;transition:background .1s;}
+  .hotspot.chip.sel{border:2px solid #212121;background:rgba(33,33,33,.06);}
+  .hotspot.chip:active{background:rgba(33,33,33,.10);}
+  .hotspot.btn:active{background:rgba(255,255,255,.12);border-radius:400px;}
 
-  /* header */
-  .header{
-    display:flex;align-items:flex-start;justify-content:space-between;
-    width:100%;padding:48px 0 16px 8px;flex:0 0 auto;
-  }
-  .title-container{flex:1 1 0;min-width:0;padding:4px 0 4px 8px;}
-  .title-container h1{
-    margin:0;font-weight:600;font-size:24px;line-height:30px;
-    color:var(--title-primary);letter-spacing:0;
-  }
-  .icon-btn{
-    width:40px;height:40px;border:2px solid transparent;background:transparent;
-    border-radius:400px;display:flex;align-items:center;justify-content:center;
-    padding:10px;cursor:pointer;color:#212121;flex:0 0 auto;
-  }
-  .icon-btn svg{width:20px;height:20px;display:block;}
-  .icon-btn:active{background:rgba(33,33,33,.06);}
-  .trailing{display:flex;align-items:center;justify-content:flex-end;min-height:38px;padding-right:4px;}
-
-  /* content */
-  .content{
-    flex:1 1 0;min-height:0;width:100%;
-    overflow-y:auto;overflow-x:clip;
-    padding:0 16px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;
-  }
-  .pref-form{display:flex;flex-direction:column;gap:24px;width:100%;}
-
-  /* intro hero */
-  .intro{display:flex;flex-direction:column;gap:24px;width:100%;}
-  .intro .hero{
-    width:100%;height:379px;border-radius:16px;background:#d9d9d9;
-    object-fit:cover;display:block;
-  }
-  .intro p{
-    margin:0;font-weight:400;font-size:16px;line-height:20px;color:var(--content-primary);
-  }
-
-  /* top bar + progress */
-  .topbar{display:flex;align-items:center;justify-content:flex-end;padding:0 8px;width:100%;height:40px;}
-  .topbar span{font-weight:500;font-size:12px;line-height:18px;color:var(--secondary);}
-  .progress{display:flex;gap:4px;align-items:center;width:100%;}
-  .progress .seg{flex:1 1 0;min-width:0;height:6px;border-radius:69px;background:var(--progress-empty);}
-  .progress .seg.fill{background:var(--progress-fill);}
-
-  /* body text */
-  .form-heading{display:flex;flex-direction:column;gap:8px;width:100%;}
-  .form-heading .q{margin:0;font-weight:600;font-size:24px;line-height:30px;color:var(--content-primary);}
-  .form-heading .sub{margin:0;font-weight:400;font-size:16px;line-height:20px;color:var(--content-primary);}
-
-  /* chips */
-  .chips{display:flex;flex-wrap:wrap;gap:8px;width:100%;align-content:flex-start;}
-  .chip{
-    height:32px;border:2px solid var(--chip-border);background:transparent;
-    border-radius:400px;padding:8px 16px;display:inline-flex;align-items:center;justify-content:center;
-    font-family:var(--font);font-weight:600;font-size:14px;line-height:16px;color:var(--chip-text);
-    white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,color .12s;
-  }
-  .chip:active{transform:scale(.97);}
-  .chip.selected{background:var(--primary);border-color:var(--primary);color:#fff;}
-
-  /* footer */
-  .footer{
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-    width:100%;padding:24px 16px 0;overflow:clip;flex:0 0 auto;
-  }
-  .btn{
-    width:100%;border-radius:400px;border:2px solid transparent;
-    padding:16px 32px;font-family:var(--font);font-weight:600;font-size:14px;
-    letter-spacing:.5px;text-align:center;cursor:pointer;line-height:1.429;
-  }
-  .btn-primary{background:var(--primary);color:#fff;}
-  .btn-primary:active{background:#000;}
-  .btn-ghost{background:transparent;color:#212121;}
-  .btn-ghost:active{background:rgba(33,33,33,.06);}
-
-  /* toast (exact Figma component 735:185688) */
+  /* ---- Toast (exact Figma component 735:185688) ---- */
   .toast{
     position:absolute;left:16px;top:665px;width:343px;
     background:#212121;border:1px solid rgba(33,33,33,0.1);
@@ -149,7 +66,7 @@
     box-shadow:0 0 4px 0 rgba(0,0,0,.1), 0 6px 6px -4px rgba(0,0,0,.2);
     opacity:0;transform:translateY(12px);pointer-events:none;transition:.3s;z-index:20;
   }
-  .toast.show{opacity:1;transform:none;}
+  .toast.show{opacity:1;transform:none;pointer-events:auto;}
   .toast .toast-content{display:flex;gap:12px;align-items:center;padding:8px 12px;width:100%;}
   .toast .icon{width:20px;height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
   .toast .icon svg{width:16.67px;height:16.67px;display:block;}
@@ -162,11 +79,6 @@
   .caption{color:#6a6a72;font-size:13px;font-family:var(--font);text-align:center;max-width:375px;}
   .caption b{color:#333;}
   .reset{background:none;border:none;color:#1da457;font-weight:600;cursor:pointer;font-size:13px;font-family:var(--font);}
-
-  /* kicker (merged intro + Step 1 opener) */
-  .kicker{margin:0;font-weight:600;font-size:13px;line-height:16px;letter-spacing:.4px;
-    color:#1da457;text-transform:uppercase;}
-  .kicker:empty{display:none;}
 
   /* ---- Mobile: fill the phone screen, drop desktop chrome ---- */
   @media (max-width:640px){
@@ -191,40 +103,10 @@
       <img class="home-tabbar" src="assets/home-tabbar.png" alt="" />
     </section>
 
-    <!-- INTRO is now merged into Step 1 (see #step) -->
-
-    <!-- STEP 1 (merged intro) / 2 / 3 share one template, generated by JS -->
-    <section class="dialog" id="step">
-      <div class="header">
-        <button class="icon-btn" aria-label="Back" onclick="stepBack()">
-          <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="trailing">
-          <button class="icon-btn" aria-label="Close" onclick="goHome()">
-            <svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="content">
-        <div class="pref-form">
-          <div style="display:flex;flex-direction:column;width:100%;">
-            <div class="topbar"><span id="stepLabel">Step 1 of 3</span></div>
-            <div class="progress" id="progress">
-              <div class="seg"></div><div class="seg"></div><div class="seg"></div>
-            </div>
-          </div>
-          <div class="form-heading">
-            <p class="kicker" id="stepKicker"></p>
-            <p class="q" id="stepQ"></p>
-            <p class="sub" id="stepSub">Select all that apply.</p>
-          </div>
-          <div class="chips" id="chips"></div>
-        </div>
-      </div>
-      <div class="footer">
-        <button class="btn btn-primary" id="primaryBtn" onclick="stepNext()">Continue</button>
-        <button class="btn btn-ghost" onclick="stepNext()">Skip</button>
-      </div>
+    <!-- STEP 1/2/3 : exact Figma image exports + interactive hotspots -->
+    <section class="step-screen" id="step">
+      <img class="step-bg" id="stepBg" src="assets/step1.png" alt="" />
+      <div class="hotspots" id="hotspots"></div>
     </section>
 
     <!-- TOAST (exact Figma component) -->
@@ -246,46 +128,66 @@
   </div>
 
   <div class="caption">
-    Exact Shipt <b>“Share your preferences”</b> onboarding flow from Figma. &nbsp;·&nbsp;
+    Exact Shipt <b>“Share your preferences”</b> screens from Figma. &nbsp;·&nbsp;
     <button class="reset" onclick="goHome()">Reset to home</button>
   </div>
 
 <script>
+  // Exact Figma screens (375x812) with chip geometry captured from the design.
   const STEPS = [
-    {
-      label:"Step 1 of 3",
-      kicker:"Share your preferences",
-      q:"Who do you usually shop for?",
-      sub:"Answer 3 quick questions to help us better tailor your shopping experience. Select all that apply.",
-      primary:"Continue",
-      chips:["Myself","Partner","Baby","Kids","Teens","Roommates","Pets"]
-    },
-    {
-      label:"Step 2 of 3",
-      q:"Which categories are you interested in?",
-      primary:"Continue",
-      chips:["Groceries","Alcohol","Pet Supplies","Gifts & Party","Beauty","Home Decor","Home Improvement","Household Essentials","Personal Care"]
-    },
-    {
-      label:"Step 3 of 3",
-      q:"What are your dietary preferences?",
-      primary:"Finish",
-      chips:["AHA Heart Healthy","Gluten Free","Low sodium","No Added Sugar","Non-GMO","Organic","Soy-free","Sugar-free","Wheat-free","Whole Grain","Atkins","Keto","Kosher","Mediterranean","Paleo","Pescatarian","Vegan","Vegetarian"]
-    }
+    { img:"assets/step1.png", chips:[
+      {label:"Myself",x:16,y:240,w:78,h:32},
+      {label:"Partner",x:102,y:240,w:83,h:32},
+      {label:"Family",x:193,y:240,w:76,h:32},
+      {label:"Roommates",x:16,y:280,w:113,h:32},
+      {label:"Business",x:137,y:280,w:91,h:32}
+    ]},
+    { img:"assets/step2.png", chips:[
+      {label:"Groceries",x:16,y:270,w:98,h:32},
+      {label:"Alcohol",x:122,y:270,w:83,h:32},
+      {label:"Baby",x:213,y:270,w:66,h:32},
+      {label:"Pet",x:287,y:270,w:55,h:32},
+      {label:"Gifts & Party",x:16,y:310,w:119,h:32},
+      {label:"Beauty",x:143,y:310,w:80,h:32},
+      {label:"Home Decor",x:231,y:310,w:115,h:32},
+      {label:"Personal Care",x:16,y:350,w:127,h:32},
+      {label:"Household Essentials",x:151,y:350,w:175,h:32}
+    ]},
+    { img:"assets/step3.png", chips:[
+      {label:"AHA Heart Healthy",x:16,y:270,w:162,h:32},
+      {label:"Gluten Free",x:186,y:270,w:110,h:32},
+      {label:"Low sodium",x:16,y:310,w:111,h:32},
+      {label:"No Added Sugar",x:135,y:310,w:141,h:32},
+      {label:"Non-GMO",x:16,y:350,w:101,h:32},
+      {label:"Organic",x:125,y:350,w:87,h:32},
+      {label:"Soy-free",x:220,y:350,w:90,h:32},
+      {label:"Sugar-free",x:16,y:390,w:105,h:32},
+      {label:"Wheat-free",x:129,y:390,w:110,h:32},
+      {label:"Whole Grain",x:16,y:430,w:120,h:32},
+      {label:"Atkins",x:139,y:430,w:75,h:32},
+      {label:"Keto",x:222,y:430,w:64,h:32},
+      {label:"Kosher",x:16,y:470,w:79,h:32},
+      {label:"Mediterranean",x:103,y:470,w:133,h:32},
+      {label:"Paleo",x:244,y:470,w:69,h:32},
+      {label:"Pescatarian",x:16,y:510,w:113,h:32},
+      {label:"Vegan",x:137,y:510,w:75,h:32},
+      {label:"Vegetarian",x:220,y:510,w:107,h:32}
+    ]}
   ];
 
-  // selection state per step
-  const selected = [new Set(), new Set(), new Set()];
-  let current = 0; // 1..3 when in a step
+  // shared header/footer hotspots (identical layout across steps)
+  const NAV = {
+    back:   {x:8,   y:48,  w:40,  h:40},
+    close:  {x:323, y:44,  w:44,  h:44},
+    primary:{x:16,  y:668, w:343, h:52},
+    skip:   {x:16,  y:728, w:343, h:52}
+  };
 
-  function show(id){
-    document.querySelectorAll('.dialog').forEach(d=>d.classList.remove('active'));
-    if(id) document.getElementById(id).classList.add('active');
-  }
+  const selected = [new Set(), new Set(), new Set()];
+  let current = 0; // 1..3
 
   function openFlow(){ goStep(1); }
 
-  // Swap home content between initial (promo banner + hotspot) and completed (no banner) states
   function setHomeState(done){
     const img = document.getElementById('homeContentImg');
     const hint = document.getElementById('launchHint');
@@ -296,47 +198,50 @@
   }
 
   function goHome(){
-    show(null);
+    document.getElementById('step').classList.remove('active');
     hideToast();
     setHomeState(false);
+    current = 0;
+  }
+
+  function mkHotspot(rect, cls, onClick, aria){
+    const b = document.createElement('button');
+    b.className = 'hotspot ' + cls;
+    b.style.left = rect.x + 'px';
+    b.style.top = rect.y + 'px';
+    b.style.width = rect.w + 'px';
+    b.style.height = rect.h + 'px';
+    if(aria) b.setAttribute('aria-label', aria);
+    b.onclick = onClick;
+    return b;
   }
 
   function goStep(n){
     current = n;
     const s = STEPS[n-1];
-    document.getElementById('stepLabel').textContent = s.label;
-    document.getElementById('stepKicker').textContent = s.kicker || '';
-    document.getElementById('stepQ').textContent = s.q;
-    document.getElementById('stepSub').textContent = s.sub || 'Select all that apply.';
-    document.getElementById('primaryBtn').textContent = s.primary;
+    document.getElementById('stepBg').src = s.img;
 
-    // progress
-    const prog = document.getElementById('progress');
-    [...prog.children].forEach((seg,i)=>{
-      seg.className = 'seg' + (i < n ? ' fill' : '');
-    });
+    const wrap = document.getElementById('hotspots');
+    wrap.innerHTML = '';
+
+    // nav
+    wrap.appendChild(mkHotspot(NAV.back, 'btn', ()=> n<=1 ? goHome() : goStep(n-1), 'Back'));
+    wrap.appendChild(mkHotspot(NAV.close, 'btn', goHome, 'Close'));
+    wrap.appendChild(mkHotspot(NAV.primary, 'btn', stepNext, n<3?'Continue':'Finish'));
+    wrap.appendChild(mkHotspot(NAV.skip, 'btn', stepNext, 'Skip'));
 
     // chips
-    const wrap = document.getElementById('chips');
-    wrap.innerHTML = '';
-    s.chips.forEach(label=>{
-      const b = document.createElement('button');
-      b.className = 'chip' + (selected[n-1].has(label) ? ' selected' : '');
-      b.textContent = label;
-      b.onclick = ()=>{
-        if(selected[n-1].has(label)){ selected[n-1].delete(label); b.classList.remove('selected'); }
-        else { selected[n-1].add(label); b.classList.add('selected'); }
+    s.chips.forEach(c=>{
+      const h = mkHotspot(c, 'chip', null, c.label);
+      if(selected[n-1].has(c.label)) h.classList.add('sel');
+      h.onclick = ()=>{
+        if(selected[n-1].has(c.label)){ selected[n-1].delete(c.label); h.classList.remove('sel'); }
+        else { selected[n-1].add(c.label); h.classList.add('sel'); }
       };
-      wrap.appendChild(b);
+      wrap.appendChild(h);
     });
 
-    show('step');
-    document.querySelector('#step .content').scrollTop = 0;
-  }
-
-  function stepBack(){
-    if(current <= 1){ goHome(); }
-    else { goStep(current - 1); }
+    document.getElementById('step').classList.add('active');
   }
 
   function stepNext(){
@@ -345,8 +250,9 @@
   }
 
   function finishFlow(){
-    show(null);
-    setHomeState(true);       // completed home: promo banner removed (exact 735:184716 design)
+    document.getElementById('step').classList.remove('active');
+    setHomeState(true);
+    current = 0;
     const t = document.getElementById('toast');
     t.classList.add('show');
     clearTimeout(window.__toastTimer);
