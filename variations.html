@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Combined intro + step 1 — 3 variations</title>
+<style>
+  :root{
+    --primary:#212121;
+    --content-primary:#302638;
+    --title-primary:#212121;
+    --secondary:rgba(33,33,33,0.8);
+    --chip-border:#cac9cc;
+    --chip-text:#25123a;
+    --progress-empty:#cac9cc;
+    --progress-fill:linear-gradient(-90deg, rgb(29,164,87) 0%, rgb(36,205,108) 47.4%);
+    --font: "Euclid Circular A", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  html,body{margin:0;}
+  body{
+    font-family:var(--font);background:#e9eaee;color:#212121;
+    padding:40px 24px 80px;
+  }
+  .page-head{max-width:1180px;margin:0 auto 32px;}
+  .page-head h1{font-size:26px;font-weight:600;margin:0 0 8px;}
+  .page-head p{font-size:15px;line-height:22px;color:#555;margin:0;max-width:760px;}
+  .page-head a{color:#1da457;font-weight:600;}
+
+  .grid{
+    display:flex;flex-wrap:wrap;gap:40px;justify-content:center;
+    max-width:1300px;margin:0 auto;
+  }
+  .col{display:flex;flex-direction:column;align-items:center;gap:16px;width:375px;}
+  .vlabel{text-align:center;}
+  .vlabel .tag{
+    display:inline-block;font-size:12px;font-weight:600;letter-spacing:.6px;
+    text-transform:uppercase;color:#1da457;margin-bottom:6px;
+  }
+  .vlabel h2{font-size:18px;font-weight:600;margin:0 0 6px;}
+  .vlabel p{font-size:13px;line-height:19px;color:#555;margin:0;}
+
+  /* ---- Phone frame ---- */
+  .device{
+    position:relative;width:375px;height:812px;background:#fff;border-radius:44px;
+    box-shadow:0 0 0 12px #111, 0 24px 60px rgba(0,0,0,.35);overflow:hidden;flex:0 0 auto;
+  }
+  .dialog{
+    position:absolute;inset:0;background:#fff;
+    display:flex;flex-direction:column;align-items:flex-end;padding-bottom:32px;
+  }
+  .header{display:flex;align-items:flex-start;justify-content:space-between;width:100%;padding:48px 0 16px 8px;flex:0 0 auto;}
+  .title-container{flex:1 1 0;min-width:0;padding:4px 0 4px 8px;}
+  .title-container h1{margin:0;font-weight:600;font-size:24px;line-height:30px;color:var(--title-primary);}
+  .icon-btn{width:40px;height:40px;border:2px solid transparent;background:transparent;border-radius:400px;display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;color:#212121;flex:0 0 auto;}
+  .icon-btn svg{width:20px;height:20px;display:block;}
+  .trailing{display:flex;align-items:center;justify-content:flex-end;min-height:38px;padding-right:4px;}
+
+  .content{flex:1 1 0;min-height:0;width:100%;overflow-y:auto;overflow-x:clip;padding:0 16px;display:flex;flex-direction:column;align-items:flex-start;gap:24px;}
+
+  .hero{width:100%;border-radius:16px;background:#d9d9d9;object-fit:cover;display:block;}
+
+  .topwrap{display:flex;flex-direction:column;width:100%;}
+  .topbar{display:flex;align-items:center;justify-content:flex-end;padding:0 8px;width:100%;height:40px;}
+  .topbar span{font-weight:500;font-size:12px;line-height:18px;color:var(--secondary);}
+  .progress{display:flex;gap:4px;align-items:center;width:100%;}
+  .progress .seg{flex:1 1 0;min-width:0;height:6px;border-radius:69px;background:var(--progress-empty);}
+  .progress .seg.fill{background:var(--progress-fill);}
+
+  .kicker{font-weight:600;font-size:13px;line-height:16px;letter-spacing:.4px;text-transform:uppercase;color:#1da457;}
+  .heading{display:flex;flex-direction:column;gap:8px;width:100%;}
+  .heading .q{margin:0;font-weight:600;font-size:24px;line-height:30px;color:var(--content-primary);}
+  .heading .q .accent{color:#1da457;}
+  .heading .sub{margin:0;font-weight:400;font-size:16px;line-height:20px;color:var(--content-primary);}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;width:100%;align-content:flex-start;}
+  .chip{height:32px;border:2px solid var(--chip-border);background:transparent;border-radius:400px;padding:8px 16px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--font);font-weight:600;font-size:14px;line-height:16px;color:var(--chip-text);white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,color .12s;}
+  .chip.selected{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  .footer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;padding:24px 16px 0;overflow:clip;flex:0 0 auto;}
+  .btn{width:100%;border-radius:400px;border:2px solid transparent;padding:16px 32px;font-family:var(--font);font-weight:600;font-size:14px;letter-spacing:.5px;text-align:center;cursor:pointer;line-height:1.429;}
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-ghost{background:transparent;color:#212121;}
+</style>
+</head>
+<body>
+  <div class="page-head">
+    <h1>Combining “Share your preferences” + Step 1 — 3 variations</h1>
+    <p>
+      Each variation merges the standalone intro screen (title, hero, “answer 3 quick questions” copy) with the
+      first question (“Who do you usually shop for?”) into a single screen, removing one tap from the flow.
+      The three approaches differ in how the two titles are integrated.
+      Source: <a href="https://www.figma.com/design/YfvhphuN37npCwalzOLbaC/First-time-UX---Onboarding?node-id=749-186687" target="_blank">Figma — Section 2</a>.
+    </p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ============ VARIATION 1 ============ -->
+    <div class="col">
+      <div class="vlabel">
+        <span class="tag">Variation 1</span>
+        <h2>Kicker + question-led</h2>
+        <p>Brand title demoted to a small kicker; the question becomes the H1 and the intro copy folds into its subtitle. Most efficient, question-forward.</p>
+      </div>
+      <div class="device">
+        <div class="dialog">
+          <div class="header">
+            <button class="icon-btn" aria-label="Back"><svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="trailing"><button class="icon-btn" aria-label="Close"><svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+          </div>
+          <div class="content">
+            <div class="topwrap">
+              <div class="topbar"><span>Step 1 of 3</span></div>
+              <div class="progress"><div class="seg fill"></div><div class="seg"></div><div class="seg"></div></div>
+            </div>
+            <div class="heading">
+              <span class="kicker">Share your preferences</span>
+              <p class="q">Who do you usually shop for?</p>
+              <p class="sub">Answer 3 quick questions to help us better tailor your shopping experience. Select all that apply.</p>
+            </div>
+            <div class="chips">
+              <button class="chip">Myself</button><button class="chip">Partner</button><button class="chip">Baby</button><button class="chip">Kids</button><button class="chip">Teens</button><button class="chip">Roommates</button><button class="chip">Pets</button>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn btn-primary">Continue</button>
+            <button class="btn btn-ghost">Skip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VARIATION 2 ============ -->
+    <div class="col">
+      <div class="vlabel">
+        <span class="tag">Variation 2</span>
+        <h2>Warm hero + first question</h2>
+        <p>Keeps the branded title and a compact hero for warmth, then drops the user straight into question one. Retains the emotional intro while saving a screen.</p>
+      </div>
+      <div class="device">
+        <div class="dialog">
+          <div class="header">
+            <div class="title-container"><h1>Share your preferences</h1></div>
+            <div class="trailing"><button class="icon-btn" aria-label="Close"><svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+          </div>
+          <div class="content">
+            <img class="hero" src="assets/intro-hero.png" alt="People sharing a Shipt bag at a party" style="height:150px;" />
+            <div class="topwrap">
+              <div class="topbar"><span>Step 1 of 3</span></div>
+              <div class="progress"><div class="seg fill"></div><div class="seg"></div><div class="seg"></div></div>
+            </div>
+            <div class="heading">
+              <p class="q">Who do you usually shop for?</p>
+              <p class="sub">First of 3 quick questions to tailor your experience. Select all that apply.</p>
+            </div>
+            <div class="chips">
+              <button class="chip">Myself</button><button class="chip">Partner</button><button class="chip">Baby</button><button class="chip">Kids</button><button class="chip">Teens</button><button class="chip">Roommates</button><button class="chip">Pets</button>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn btn-primary">Continue</button>
+            <button class="btn btn-ghost">Not now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ VARIATION 3 ============ -->
+    <div class="col">
+      <div class="vlabel">
+        <span class="tag">Variation 3</span>
+        <h2>Merged single headline</h2>
+        <p>The two titles become one coherent sentence — brand intent + first question in a single H1. No hero; leans conversational and confident.</p>
+      </div>
+      <div class="device">
+        <div class="dialog">
+          <div class="header">
+            <button class="icon-btn" aria-label="Back"><svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="trailing"><button class="icon-btn" aria-label="Close"><svg viewBox="0 0 20 20" fill="none"><path d="M4 4l12 12M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+          </div>
+          <div class="content">
+            <div class="topwrap">
+              <div class="topbar"><span>Step 1 of 3</span></div>
+              <div class="progress"><div class="seg fill"></div><div class="seg"></div><div class="seg"></div></div>
+            </div>
+            <div class="heading">
+              <p class="q">Let’s tailor your shopping —<br><span class="accent">who do you usually shop for?</span></p>
+              <p class="sub">Answer 3 quick questions to personalize your experience. Select all that apply.</p>
+            </div>
+            <div class="chips">
+              <button class="chip">Myself</button><button class="chip">Partner</button><button class="chip">Baby</button><button class="chip">Kids</button><button class="chip">Teens</button><button class="chip">Roommates</button><button class="chip">Pets</button>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn btn-primary">Continue</button>
+            <button class="btn btn-ghost">Skip</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click',()=>c.classList.toggle('selected'));
+  });
+</script>
+</body>
+</html>
