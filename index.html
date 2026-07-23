@@ -49,8 +49,15 @@
   .step-screen{position:absolute;inset:0;background:#fff;z-index:10;display:none;}
   .step-screen.active{display:block;animation:slideIn .28s cubic-bezier(.2,.7,.3,1);}
   @keyframes slideIn{from{transform:translateY(14px);opacity:0;}to{transform:none;opacity:1;}}
-  .step-bg{position:absolute;inset:0;width:375px;height:812px;display:block;}
-  .hotspots{position:absolute;inset:0;}
+  .step-head-img{position:absolute;top:0;left:0;width:375px;height:88px;display:block;z-index:3;}
+  .step-content{position:absolute;top:88px;left:0;width:375px;height:556px;
+    overflow-y:auto;overflow-x:hidden;z-index:1;-webkit-overflow-scrolling:touch;}
+  .content-inner{position:relative;width:375px;}
+  .content-inner img{display:block;width:375px;}
+  .step-foot-img{position:absolute;top:644px;left:0;width:375px;height:168px;display:block;z-index:3;}
+  .nav-hotspots{position:absolute;inset:0;z-index:4;pointer-events:none;}
+  .nav-hotspots .hotspot{pointer-events:auto;}
+  .chip-hotspots{position:absolute;inset:0;}
   .hotspot{position:absolute;background:transparent;border:none;padding:0;margin:0;cursor:pointer;
     -webkit-tap-highlight-color:transparent;}
   .hotspot.chip{border-radius:400px;transition:background .1s;}
@@ -105,8 +112,15 @@
 
     <!-- STEP 1/2/3 : exact Figma image exports + interactive hotspots -->
     <section class="step-screen" id="step">
-      <img class="step-bg" id="stepBg" src="assets/step1.png" alt="" />
-      <div class="hotspots" id="hotspots"></div>
+      <img class="step-head-img" id="stepHead" src="assets/s1-head.png" alt="" />
+      <div class="step-content" id="stepContent">
+        <div class="content-inner" id="contentInner">
+          <img id="stepContentImg" src="assets/s1-content.png" alt="" />
+          <div class="chip-hotspots" id="chipHotspots"></div>
+        </div>
+      </div>
+      <img class="step-foot-img" id="stepFoot" src="assets/s1-foot.png" alt="" />
+      <div class="nav-hotspots" id="navHotspots"></div>
     </section>
 
     <!-- TOAST (exact Figma component) -->
@@ -135,14 +149,14 @@
 <script>
   // Exact Figma screens (375x812) with chip geometry captured from the design.
   const STEPS = [
-    { img:"assets/step1.png", chips:[
+    { head:"assets/s1-head.png", content:"assets/s1-content.png", foot:"assets/s1-foot.png", chips:[
       {label:"Myself",x:16,y:240,w:78,h:32},
       {label:"Partner",x:102,y:240,w:83,h:32},
       {label:"Family",x:193,y:240,w:76,h:32},
       {label:"Roommates",x:16,y:280,w:113,h:32},
       {label:"Business",x:137,y:280,w:91,h:32}
     ]},
-    { img:"assets/step2.png", chips:[
+    { head:"assets/s2-head.png", content:"assets/s2-content.png", foot:"assets/s2-foot.png", chips:[
       {label:"Groceries",x:16,y:270,w:98,h:32},
       {label:"Alcohol",x:122,y:270,w:83,h:32},
       {label:"Baby",x:213,y:270,w:66,h:32},
@@ -153,7 +167,7 @@
       {label:"Personal Care",x:16,y:350,w:127,h:32},
       {label:"Household Essentials",x:151,y:350,w:175,h:32}
     ]},
-    { img:"assets/step3.png", chips:[
+    { head:"assets/s3-head.png", content:"assets/s3-content.png", foot:"assets/s3-foot.png", chips:[
       {label:"AHA Heart Healthy",x:16,y:270,w:162,h:32},
       {label:"Gluten Free",x:186,y:270,w:110,h:32},
       {label:"Low sodium",x:16,y:310,w:111,h:32},
@@ -219,20 +233,25 @@
   function goStep(n){
     current = n;
     const s = STEPS[n-1];
-    document.getElementById('stepBg').src = s.img;
+    document.getElementById('stepHead').src = s.head;
+    document.getElementById('stepContentImg').src = s.content;
+    document.getElementById('stepFoot').src = s.foot;
+    document.getElementById('stepContent').scrollTop = 0;
 
-    const wrap = document.getElementById('hotspots');
+    // fixed nav (header + footer), screen coordinates
+    const nav = document.getElementById('navHotspots');
+    nav.innerHTML = '';
+    nav.appendChild(mkHotspot(NAV.back, 'btn', ()=> n<=1 ? goHome() : goStep(n-1), 'Back'));
+    nav.appendChild(mkHotspot(NAV.close, 'btn', goHome, 'Close'));
+    nav.appendChild(mkHotspot(NAV.primary, 'btn', stepNext, n<3?'Continue':'Finish'));
+    nav.appendChild(mkHotspot(NAV.skip, 'btn', stepNext, 'Skip'));
+
+    // chips live inside the scrollable content (coords are content-relative: frameY - 88)
+    const wrap = document.getElementById('chipHotspots');
     wrap.innerHTML = '';
-
-    // nav
-    wrap.appendChild(mkHotspot(NAV.back, 'btn', ()=> n<=1 ? goHome() : goStep(n-1), 'Back'));
-    wrap.appendChild(mkHotspot(NAV.close, 'btn', goHome, 'Close'));
-    wrap.appendChild(mkHotspot(NAV.primary, 'btn', stepNext, n<3?'Continue':'Finish'));
-    wrap.appendChild(mkHotspot(NAV.skip, 'btn', stepNext, 'Skip'));
-
-    // chips
     s.chips.forEach(c=>{
-      const h = mkHotspot(c, 'chip', null, c.label);
+      const rect = {x:c.x, y:c.y - 88, w:c.w, h:c.h};
+      const h = mkHotspot(rect, 'chip', null, c.label);
       if(selected[n-1].has(c.label)) h.classList.add('sel');
       h.onclick = ()=>{
         if(selected[n-1].has(c.label)){ selected[n-1].delete(c.label); h.classList.remove('sel'); }
