@@ -51,7 +51,13 @@
   @keyframes slideIn{from{transform:translateY(14px);opacity:0;}to{transform:none;opacity:1;}}
   .step-head-img{position:absolute;top:0;left:0;width:375px;height:88px;display:block;z-index:3;}
   .step-content{position:absolute;top:88px;left:0;width:375px;height:556px;
-    overflow-y:auto;overflow-x:hidden;z-index:1;-webkit-overflow-scrolling:touch;}
+    overflow-y:auto;overflow-x:hidden;z-index:1;-webkit-overflow-scrolling:touch;
+    touch-action:pan-y;overscroll-behavior:contain;}
+  .step-content::-webkit-scrollbar{width:5px;}
+  .step-content::-webkit-scrollbar-thumb{background:rgba(0,0,0,.2);border-radius:5px;}
+  .scroll-fade{position:absolute;left:0;top:596px;width:375px;height:48px;z-index:2;pointer-events:none;
+    background:linear-gradient(to bottom, rgba(255,255,255,0), #fff 82%);opacity:0;transition:opacity .18s;}
+  .scroll-fade.show{opacity:1;}
   .content-inner{position:relative;width:375px;}
   .content-inner img{display:block;width:375px;}
   .step-foot-img{position:absolute;top:644px;left:0;width:375px;height:168px;display:block;z-index:3;}
@@ -120,6 +126,7 @@
         </div>
       </div>
       <img class="step-foot-img" id="stepFoot" src="assets/s1-foot.png" alt="" />
+      <div class="scroll-fade" id="scrollFade"></div>
       <div class="nav-hotspots" id="navHotspots"></div>
     </section>
 
@@ -237,6 +244,11 @@
     document.getElementById('stepContentImg').src = s.content;
     document.getElementById('stepFoot').src = s.foot;
     document.getElementById('stepContent').scrollTop = 0;
+    const sc = document.getElementById('stepContent');
+    const cimg = document.getElementById('stepContentImg');
+    sc.onscroll = updateScrollFade;
+    cimg.onload = updateScrollFade;
+    requestAnimationFrame(updateScrollFade);
 
     // fixed nav (header + footer), screen coordinates
     const nav = document.getElementById('navHotspots');
@@ -261,6 +273,13 @@
     });
 
     document.getElementById('step').classList.add('active');
+  }
+
+  function updateScrollFade(){
+    const sc = document.getElementById('stepContent');
+    const fade = document.getElementById('scrollFade');
+    const more = (sc.scrollHeight - sc.clientHeight - sc.scrollTop) > 1;
+    fade.classList.toggle('show', more);
   }
 
   function stepNext(){
